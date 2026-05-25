@@ -1,5 +1,6 @@
 package game
 
+import "core:net"
 import "core:fmt"
 import "core:math"
 import rl "vendor:raylib"
@@ -49,7 +50,7 @@ postCollisionVel :: proc(
 }
 
 
-main :: proc() {
+tmp :: proc() {
 	rl.InitWindow(1280, 720, "pong")
 
 
@@ -132,4 +133,25 @@ main :: proc() {
 	}
 
 	rl.CloseWindow()
+}
+
+main :: proc() {
+	sock, err := net.make_bound_udp_socket(net.IP4_Any, 9000)
+
+	if err != nil {
+		fmt.println("no sock for you: ", err)
+		return
+	}
+
+	buffer: [1000]byte
+
+	for {
+		n, client, err := net.recv_udp(sock, buffer[:])
+
+		if err != nil {
+			fmt.println("udp err: ", err)
+		}
+
+		fmt.println(client.address, ": ", string(buffer[:n]))
+	}
 }
