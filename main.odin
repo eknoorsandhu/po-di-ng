@@ -1,8 +1,6 @@
 package game
 
 import rl "vendor:raylib"
-import "core:fmt"
-import "core:net"
 
 
 main :: proc() {
@@ -15,36 +13,17 @@ main :: proc() {
 	)
 	defer rl.CloseWindow()
 
+	rl.SetTargetFPS(60)
+
 	state := defaultState(config)
 
-	fmt.println(state)
-
 	for !rl.WindowShouldClose() {
-		dt := rl.GetFrameTime()
+		dt := min(rl.GetFrameTime(), 0.1)
 
-		handleInput(&state, config, dt)
+		input := readInput()
+		handleInput(&state, config, dt, input)
 		updatePhysics(&state, config, dt)
 		drawGame(&state, config)
 	}
 }
 
-test :: proc() {
-	sock, err := net.make_bound_udp_socket(net.IP4_Any, 9000)
-
-	if err != nil {
-		fmt.println("no sock for you: ", err)
-		return
-	}
-
-	buffer: [1000]byte
-
-	for {
-		n, client, err := net.recv_udp(sock, buffer[:])
-
-		if err != nil {
-			fmt.println("udp err: ", err)
-		}
-
-		fmt.println(client.address, ": ", string(buffer[:n]))
-	}
-}

@@ -1,20 +1,36 @@
 package game
 import rl "vendor:raylib"
 
-handleInput :: proc(state: ^game_state, config: game_config, dt: f32){
-    if rl.IsKeyDown(.LEFT) {
-		state.pong_vel.x = -1 * X_VEL
-    } else if rl.IsKeyDown(.RIGHT) {
-        state.pong_vel.x = X_VEL
+readInput :: proc() -> game_input {
+    input: game_input
+    if rl.IsKeyDown(.W) { input.left -= 1 }
+    if rl.IsKeyDown(.S) { input.left += 1 }
+    if rl.IsKeyDown(.UP) { input.right -= 1 }
+    if rl.IsKeyDown(.DOWN) { input.right += 1 }
+    input.start = rl.IsKeyPressed(.SPACE)
+    return input
+}
+
+handleInput :: proc(state: ^game_state, config: game_config, dt: f32, input: game_input) {
+    if input.start {
+        if state.screen != .play {
+            state^ = defaultState(config)
+            state.screen = .play
+        }
+
+        if state.pong_vel.x == 0 {
+            state.pong_vel = rl.Vector2{X_VEL * state.serve_dir, Y_VEL * 0.3}
+        }
     }
 
-    if rl.IsKeyDown(.UP) {
-        state.left_paddle.y -= config.paddle_speed * dt
-        state.right_paddle.y -= config.paddle_speed * dt
-    }
+    if state.screen != .play { return }
 
-    if rl.IsKeyDown(.DOWN) {
-        state.left_paddle.y += config.paddle_speed * dt
-        state.right_paddle.y += config.paddle_speed * dt
-    }
+    state.left_paddle.y = clamp(
+        state.left_paddle.y + input.left * config.paddle_speed * dt,
+        0, config.window_h - config.paddle_h,
+    )
+    state.right_paddle.y = clamp(
+        state.right_paddle.y + input.right * config.paddle_speed * dt,
+        0, config.window_h - config.paddle_h,
+    )
 }
