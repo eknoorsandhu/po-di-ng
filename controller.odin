@@ -3,6 +3,7 @@ import rl "vendor:raylib"
 
 readInput :: proc() -> game_input {
     input: game_input
+    if !rl.IsWindowFocused() { return input }
     if rl.IsKeyDown(.W) { input.left -= 1 }
     if rl.IsKeyDown(.S) { input.left += 1 }
     if rl.IsKeyDown(.UP) { input.right -= 1 }

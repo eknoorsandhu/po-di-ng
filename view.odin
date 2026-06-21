@@ -2,7 +2,7 @@ package game
 
 import rl "vendor:raylib"
 
-drawGame :: proc(state: ^game_state, config: game_config) {
+drawGame :: proc(state: ^game_state, config: game_config, status: cstring) {
 	rl.BeginDrawing()
 	rl.ClearBackground(rl.BLACK)
 
@@ -11,6 +11,7 @@ drawGame :: proc(state: ^game_state, config: game_config) {
 	rl.DrawRectangleRec(state.right_paddle, rl.WHITE)
 
 	rl.DrawText(rl.TextFormat("%i    %i", i32(state.left_score), i32(state.right_score)), 540, 30, 40, rl.WHITE)
+	rl.DrawText(status, 340, 100, 24, rl.GRAY)
 
 	switch state.screen {
 	case .start:
