@@ -26,15 +26,15 @@ game_connection :: struct {
     remote: game_input,
 }
 
-openConnection :: proc(host: bool) -> (game_connection, bool) {
+openConnection :: proc(host: bool, address: string) -> (game_connection, bool) {
     connection := game_connection{host = host}
     socket: net.TCP_Socket
     err: net.Network_Error
 
     if host {
-        socket, err = net.listen_tcp(net.Endpoint{net.IP4_Loopback, 9000}, 1)
+        socket, err = net.listen_tcp(net.Endpoint{net.IP4_Any, 9000}, 1)
     } else {
-        socket, err = net.dial_tcp(net.IP4_Loopback, 9000, net.TCP_Options{no_delay = true})
+        socket, err = net.dial_tcp(address, 9000, net.TCP_Options{no_delay = true})
     }
 
     if err != nil {
@@ -51,7 +51,7 @@ openConnection :: proc(host: bool) -> (game_connection, bool) {
     if host {
         connection.listener = socket
         connection.waiting = true
-        fmt.println("waiting on 127.0.0.1:9000")
+        fmt.println("waiting on port 9000")
     } else {
         connection.socket = socket
         connection.connected = true
@@ -112,7 +112,6 @@ receiveGame :: proc(connection: ^game_connection, state: ^game_state) {
         }
         if connection.received == len(buffer) {
             if connection.host {
-                connection.remote.left = clamp(connection.incoming.input.left, -1, 1)
                 connection.remote.right = clamp(connection.incoming.input.right, -1, 1)
                 connection.remote.start = connection.remote.start || connection.incoming.input.start
             } else {

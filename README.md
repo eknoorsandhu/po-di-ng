@@ -24,22 +24,27 @@ build once:
 odin build .
 ```
 
-then in two terminals on the same laptop:
+then on the host:
 
 ```sh
 ./poding host
 ```
 
+on the other laptop (replace the ip with the host's wifi ip):
+
 ```sh
-./poding join
+./poding join 192.168.1.10
 ```
 
-start the host first. it waits for the second game on 127.0.0.1:9000 (tcp).
-same controls, just keep either game window focused. both paddles work from
-either window since we're sharing a keyboard anyway. the host does the physics
-and sends the ball, paddles and score to the other game.
+start the host first. host uses W / S, joining player uses up / down.
+space works in either window to start, serve or play again.
+the host does the physics and sends the ball, paddles and score over tcp.
 
-use the same build for both. no accounts, lobby or anything.
+both laptops need to be on the same network. allow tcp port 9000 through the
+host's firewall. guest wifi with client isolation won't work.
+for two windows on one laptop use `./poding join 127.0.0.1` and switch focus.
+
+use the same build for both (same os/architecture). no accounts, lobby or anything.
 if one game closes, restart both to connect again.
 
 ## tests

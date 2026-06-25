@@ -8,16 +8,20 @@ import "core:os"
 main :: proc() {
 	config := defaultConfig()
 	mode := ""
-	if len(os.args) == 2 { mode = os.args[1] }
-	if len(os.args) > 2 || (mode != "" && mode != "host" && mode != "join") {
-		fmt.println("usage: poding [host|join]")
+	if len(os.args) > 1 { mode = os.args[1] }
+	if !((mode == "" && len(os.args) == 1) ||
+	     (mode == "host" && len(os.args) == 2) ||
+	     (mode == "join" && len(os.args) == 3)) {
+		fmt.println("usage: poding [host|join <host-ip>]")
 		os.exit(1)
 	}
 
 	connection: game_connection
 	if mode != "" {
+		address := ""
+		if mode == "join" { address = os.args[2] }
 		ok: bool
-		connection, ok = openConnection(mode == "host")
+		connection, ok = openConnection(mode == "host", address)
 		if !ok { os.exit(1) }
 	}
 	defer closeConnection(&connection)
@@ -42,7 +46,7 @@ main :: proc() {
 	for !rl.WindowShouldClose() {
 		dt := min(rl.GetFrameTime(), 0.1)
 
-		input := readInput()
+		input := readInput(mode)
 		status: cstring = ""
 		if mode == "" {
 			handleInput(&state, config, dt, input)
@@ -51,8 +55,7 @@ main :: proc() {
 			receiveGame(&connection, &state)
 			if connection.connected {
 				if connection.host {
-					input.left = clamp(input.left + connection.remote.left, -1, 1)
-					input.right = clamp(input.right + connection.remote.right, -1, 1)
+					input.right = connection.remote.right
 					input.start = input.start || connection.remote.start
 					connection.remote.start = false
 					handleInput(&state, config, dt, input)
@@ -66,9 +69,9 @@ main :: proc() {
 			} else if connection.disconnected {
 				status = "disconnected. restart both games"
 			} else if connection.host {
-				status = "host - connected"
+				status = "host - connected - W / S"
 			} else {
-				status = "joined - connected"
+				status = "joined - connected - UP / DOWN"
 			}
 		}
 		drawGame(&state, config, status)

@@ -1,13 +1,17 @@
 package game
 import rl "vendor:raylib"
 
-readInput :: proc() -> game_input {
+readInput :: proc(mode: string) -> game_input {
     input: game_input
     if !rl.IsWindowFocused() { return input }
-    if rl.IsKeyDown(.W) { input.left -= 1 }
-    if rl.IsKeyDown(.S) { input.left += 1 }
-    if rl.IsKeyDown(.UP) { input.right -= 1 }
-    if rl.IsKeyDown(.DOWN) { input.right += 1 }
+    if mode != "join" {
+        if rl.IsKeyDown(.W) { input.left -= 1 }
+        if rl.IsKeyDown(.S) { input.left += 1 }
+    }
+    if mode != "host" {
+        if rl.IsKeyDown(.UP) { input.right -= 1 }
+        if rl.IsKeyDown(.DOWN) { input.right += 1 }
+    }
     input.start = rl.IsKeyPressed(.SPACE)
     return input
 }
